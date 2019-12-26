@@ -1,7 +1,6 @@
-
 {
   "name": "mona",
-  "version": "0.0.1",
+  "version": "19.12.0",
   "description": "Deployment MONitor for ECS services",
   "main": "index.js",
   "scripts": {
