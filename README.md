@@ -51,3 +51,14 @@ the serviceState includes:
 - taskDef - ARN of the task definition in the primary deployment,
 - runningCount
 - desiredCount
+
+### Examples from slack bot
+
+##### Successful deployment
+![Successful deployment](./example/slack-examples/happy-path.png)
+##### Deployment re-started
+![Deployment re-started](./example/slack-examples/restart.png)
+##### Scaling event
+![Scaling event](./example/slack-examples/scaling.png)
+##### Deployment timeout
+![Deployment timeout](./example/slack-examples/timeout.png)
