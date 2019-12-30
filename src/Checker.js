@@ -115,7 +115,7 @@ class Checker {
 
       if (deploymentTime > this.secondsUntilAlert) {
         if (this.deploymentTimeoutAlerted[service] !== serviceState.deploymentId) {
-          getLogger().info(`Detected deploy timeout for service ${serviceState.service}
+          console.log(`Detected deploy timeout for service ${serviceState.service}
 timeout is ${this.secondsUntilAlert} seconds and running for ${deploymentTime} seconds`);
           this.deploymentTimeoutAlerted[service] = serviceState.deploymentId;
           return serviceState;

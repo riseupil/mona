@@ -1,6 +1,6 @@
 'use strict';
 
-let logger = new Error('Used logger before loggerInit');
+let logger = false;
 
 function loggerInit(providedLogger) {
   logger = providedLogger || console;
@@ -13,6 +13,9 @@ function loggerInit(providedLogger) {
 }
 
 function getLogger() {
+  if (!logger) {
+    throw new Error('Used logger before loggerInit')
+  }
   return logger;
 }
 
