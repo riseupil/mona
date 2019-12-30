@@ -10,21 +10,28 @@ function mockResults(service, overrides = {}) {
     service,
     deploymentId: overrides.deploymentId || 'deploymentId',
     deploymentCreated: overrides.deploymentCreated || moment(),
-    success: ('success' in overrides) ? overrides.success : true,
+    desiredCount: ('desiredCount' in overrides) ? overrides.desiredCount : 1,
+    runningCount: ('runningCount' in overrides) ? overrides.runningCount : 1,
     taskDef: overrides.taskDef || 'taskDef',
   };
 }
 
 function checkAlerts(result, serviceDeployingAlerts, serviceDeployDoneAlerts, serviceDeployTimeoutAlerts, serviceScalingAlerts) {
-  expect(result.serviceDeployingAlerts.length).toEqual(serviceDeployingAlerts);
-  expect(result.serviceDeployDoneAlerts.length).toEqual(serviceDeployDoneAlerts);
-  expect(result.serviceDeployTimeoutAlerts.length).toEqual(serviceDeployTimeoutAlerts);
-  expect(result.serviceScalingAlerts.length).toEqual(serviceScalingAlerts);
+  expect(_createResultObject(result)).toEqual({ serviceDeployingAlerts, serviceDeployDoneAlerts, serviceDeployTimeoutAlerts, serviceScalingAlerts });
+}
+
+function _createResultObject(result) {
+  return {
+    serviceDeployingAlerts: result.serviceDeployingAlerts.length,
+    serviceDeployDoneAlerts: result.serviceDeployDoneAlerts.length,
+    serviceDeployTimeoutAlerts: result.serviceDeployTimeoutAlerts.length,
+    serviceScalingAlerts: result.serviceScalingAlerts.length,
+  }
 }
 
 describe('Deployment checker', () => {
   describe('Calculate deployment status', () => {
-    test('When deployment is success, state is STABLE', () => {
+    test('When deployment is stable, state is STABLE', () => {
       const checker = new CheckerTest();
       const apiResults = {
         a: mockResults('a'),
@@ -35,10 +42,10 @@ describe('Deployment checker', () => {
       expect(result.serviceDeployStates.b).toEqual(DEPLOYMENT_STATES.STABLE);
     });
 
-    test('When deployment is not success, state is DEPLOYING', () => {
+    test('When deployment is not stable, state is DEPLOYING', () => {
       const checker = new CheckerTest();
       const apiResults = {
-        a: mockResults('a', { success: false }),
+        a: mockResults('a', { runningCount: 0 }),
         b: mockResults('b'),
       };
       const result = checker.iterate(apiResults);
@@ -46,15 +53,15 @@ describe('Deployment checker', () => {
       expect(result.serviceDeployStates.b).toEqual(DEPLOYMENT_STATES.STABLE);
     });
 
-    test('When deployment is not success, but taskId didn\'t change, state is REDEPLOYING', () => {
+    test('When deployment is not stable, but taskId didn\'t change, state is SCALING', () => {
       const checker = new CheckerTest();
-      const result1 = checker.iterate({ a: mockResults('a', { success: false, deploymentId: 'a' }) });
+      const result1 = checker.iterate({ a: mockResults('a', { runningCount: 0, deploymentId: 'a' }) });
       expect(result1.serviceDeployStates.a).toEqual(DEPLOYMENT_STATES.DEPLOYING);
 
-      const result2 = checker.iterate({ a: mockResults('a', { success: true, deploymentId: 'a' }) });
+      const result2 = checker.iterate({ a: mockResults('a', { deploymentId: 'a' }) });
       expect(result2.serviceDeployStates.a).toEqual(DEPLOYMENT_STATES.STABLE);
 
-      const result3 = checker.iterate({ a: mockResults('a', { success: false, deploymentId: 'a' }) });
+      const result3 = checker.iterate({ a: mockResults('a', { runningCount: 0, deploymentId: 'a' }) });
       expect(result3.serviceDeployStates.a).toEqual(DEPLOYMENT_STATES.SCALING);
     });
   });
@@ -64,11 +71,11 @@ describe('Deployment checker', () => {
       const checker = new CheckerTest();
       const apiResults = [
         {
-          a: mockResults('a', { success: false }),
+          a: mockResults('a', { runningCount: 0 }),
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: false }),
+          a: mockResults('a', { runningCount: 0 }),
           b: mockResults('b'),
         },
       ];
@@ -87,7 +94,7 @@ describe('Deployment checker', () => {
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: false, taskDef: 'newTaskDef', deploymentId: 'deployId2' }),
+          a: mockResults('a', { runningCount: 0, taskDef: 'newTaskDef', deploymentId: 'deployId2' }),
           b: mockResults('b'),
         },
       ];
@@ -102,7 +109,7 @@ describe('Deployment checker', () => {
       const checker = new CheckerTest();
       const apiResults = [
         {
-          a: mockResults('a', { success: false }),
+          a: mockResults('a', { runningCount: 0 }),
           b: mockResults('b'),
         },
         {
@@ -121,11 +128,11 @@ describe('Deployment checker', () => {
       const checker = new CheckerTest(10);
       const apiResults = [
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId2' }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId2' }),
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId2', deploymentCreated: moment().subtract(1, 'h') }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId2', deploymentCreated: moment().subtract(1, 'h') }),
           b: mockResults('b'),
         },
       ];
@@ -140,11 +147,11 @@ describe('Deployment checker', () => {
       const checker = new CheckerTest(10);
       const apiResults = [
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId1' }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId1' }),
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId2' }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId2' }),
           b: mockResults('b'),
         },
       ];
@@ -159,15 +166,15 @@ describe('Deployment checker', () => {
       const checker = new CheckerTest(10);
       const apiResults = [
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId1' }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId1' }),
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: true, deploymentId: 'deployId1' }),
+          a: mockResults('a', { deploymentId: 'deployId1' }),
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId1' }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId1' }),
           b: mockResults('b'),
         },
       ];
@@ -185,11 +192,11 @@ describe('Deployment checker', () => {
       const checker = new CheckerTest(10);
       const apiResults = [
         {
-          a: mockResults('a', { success: true, deploymentId: 'deployId1' }),
+          a: mockResults('a', { deploymentId: 'deployId1' }),
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId1' }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId1' }),
           b: mockResults('b'),
         },
       ];
@@ -204,15 +211,15 @@ describe('Deployment checker', () => {
       const checker = new CheckerTest(10);
       const apiResults = [
         {
-          a: mockResults('a', { success: true, deploymentId: 'deployId1' }),
+          a: mockResults('a', { deploymentId: 'deployId1' }),
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId2' }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId2' }),
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId2' }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId2' }),
           b: mockResults('b'),
         },
       ];
@@ -230,15 +237,15 @@ describe('Deployment checker', () => {
       const checker = new CheckerTest(10);
       const apiResults = [
         {
-          a: mockResults('a', { success: true, deploymentId: 'deployId1' }),
+          a: mockResults('a', { deploymentId: 'deployId1' }),
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId1' }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId1' }),
           b: mockResults('b'),
         },
         {
-          a: mockResults('a', { success: false, deploymentId: 'deployId1' }),
+          a: mockResults('a', { runningCount: 0, deploymentId: 'deployId1' }),
           b: mockResults('b'),
         },
       ];

@@ -3,7 +3,6 @@
 const moment = require('moment');
 const _ = require('lodash');
 
-const { getLogger } = require('./logger');
 const { DEPLOYMENT_STATES } = require('./consts');
 
 class Checker {
@@ -44,13 +43,17 @@ class Checker {
   }
 
   _serviceDeploymentState(newState, service) {
-    if (newState.success) {
+    if (this._isStable(newState)) {
       return DEPLOYMENT_STATES.STABLE;
     }
     if (this._isScaling(service, newState)) {
       return DEPLOYMENT_STATES.SCALING;
     }
     return DEPLOYMENT_STATES.DEPLOYING;
+  }
+
+  _isStable(state) {
+    return state.runningCount === state.desiredCount;
   }
 
   _isScaling(service, state) {
@@ -72,7 +75,7 @@ class Checker {
   _updateTaskDefs(serviceNames, serviceStates) {
     _.forEach(serviceNames, service => {
       this.currentTaskDef[service] = serviceStates[service].taskDef;
-      if (serviceStates[service].success) {
+      if (this._isStable(serviceStates[service])) {
         this.lastDeploymentDone[service] = serviceStates[service].deploymentId;
       }
     });

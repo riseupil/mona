@@ -68,7 +68,6 @@ ${JSON.stringify(apiResponse.failures)}`);
     service,
     deploymentId: primaryDeployment.id,
     deploymentCreated: primaryDeployment.updatedAt,
-    success: primaryDeployment.runningCount === primaryDeployment.desiredCount,
     taskDef: primaryDeployment.taskDefinition,
     runningCount: primaryDeployment.runningCount,
     desiredCount: primaryDeployment.desiredCount,
