@@ -162,7 +162,7 @@ describe('Deployment checker', () => {
       checkAlerts(result2, 1, 0, 0, 0);
     });
 
-    test('When deployment is running again for same taskDef, should alert re-deploy', () => {
+    test('When deployment is running again for same taskDef, should alert scaling', () => {
       const checker = new CheckerTest(10);
       const apiResults = [
         {
@@ -188,7 +188,24 @@ describe('Deployment checker', () => {
       checkAlerts(result3, 0, 0, 0, 1);
     });
 
-    test('When deployment is running again for same taskDef, should alert re-deploy - Mona just started', () => {
+    test('When increased desired count, should alert scaling', () => {
+      const checker = new CheckerTest(10);
+      const apiResults = [
+        {
+          a: mockResults('a'),
+        },
+        {
+          a: mockResults('a', { desiredCount: 2 }),
+        },
+      ];
+      const result1 = checker.iterate(apiResults[0]);
+      checkAlerts(result1, 0, 0, 0, 0);
+
+      const result2 = checker.iterate(apiResults[1]);
+      checkAlerts(result2, 0, 0, 0, 1);
+    });
+
+    test('When deployment is running again for same taskDef, should alert scaling - Mona just started', () => {
       const checker = new CheckerTest(10);
       const apiResults = [
         {
@@ -233,7 +250,7 @@ describe('Deployment checker', () => {
       checkAlerts(result3, 0, 0, 0, 0);
     });
 
-    test('Re-deployment alerts should happen once per deploy', () => {
+    test('Scaling alerts should happen once per deploy', () => {
       const checker = new CheckerTest(10);
       const apiResults = [
         {
