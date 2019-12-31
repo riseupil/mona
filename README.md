@@ -2,7 +2,7 @@
 # MONA
 
 Mona is a deployment monitor for ECS services. It will use API periodic calls to know which services are running in the cluster,
-and what they're deployment status is. It will send the following notification:
+and what their deployment status is. It will send the following notification:
 - A new deployment was started by a user.
 - A scaling event happened. This either means someone changed the desired count of the service, or a task failed.
 - A deployment finished.
