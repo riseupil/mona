@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://github.com/olivierlacan/keep-a
 
 ## [Unreleased]
 
+### Changed
+- Fixes in README
+
 ## [1.0.1]
 
 ### Added

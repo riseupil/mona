@@ -33,21 +33,23 @@ You can add this policy to the role you use to run the service:
 
 ### Configurations
 
-Using `mona` requires providing a `messageSender` and an optional `messageFormatter` - see below.
+Using `mona` requires providing a `messageSender`, a `params` object and an optional `messageFormatter` - see below.
 
-Required configs:
+#### the `params` object
+
+Required params:
 - `ecsCluster`: The cluster to monitor. Currently we don't support multiple clusters.
 - `AWSRegion`: The region the cluster is in.
 
-Optional configs:
-- `serviceNamesOverride`: If you want to monitor specific service, provide an array of their names in ECS. Currently lists with over 10 items are not supported.
+Optional params:
+- `serviceNamesOverride`: If you want to monitor specific service, provide an array of their names in ECS.
 - `secondsUntilAlert`: Time in seconds to wait for a deployment to finish before sending an alert.
 - `checkIntervalSeconds`: Interval for checking service statuses.
-- `logInterval`: Interval for logging all the service statuses.
-- `refreshServicesInterval`: Interval for refreshing the service list.
+- `logInterval`: Interval for logging all the service statuses. (number of `checkIntervalSeconds` cycles).
+- `refreshServicesInterval`: Interval for refreshing the service list. (number of `checkIntervalSeconds` cycles).
 
 #### messageSender
-Should support the api `send: message => {}`. See example for slack
+Should support the api `send: message => {}`. See example for slack.
 
 #### messageFormatter
 Provide a message formatter if you want to override the defaults.
@@ -65,9 +67,8 @@ const messageFormatter = {
 }
 ```
 the serviceState includes:
-- `deploymentId` - The primary deploymentId in ECS. Changes every time a user updates the service).
+- `deploymentId` - The primary deploymentId in ECS. Changes every time a user updates the service.
 - `deploymentCreated` - The time of the last update to the primary deployment.
-- `success` - true ifff desiredCount === runningCount in the primary deployment,
 - `taskDef` - ARN of the task definition in the primary deployment,
 - `runningCount`
 - `desiredCount`
