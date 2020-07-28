@@ -1,45 +1,8 @@
 'use strict';
 
 const moment = require('moment');
-const { DEPLOYMENT_STATES } = require('../src/consts');
-
+const { mockResults, checkAlerts } = require('./test-utils');
 const Checker = require('../src/Checker');
-
-function mockResults(service, overrides = {}) {
-  return {
-    service,
-    deploymentId: overrides.deploymentId || 'deploymentId',
-    deploymentCreated: overrides.deploymentCreated || moment(),
-    desiredCount: ('desiredCount' in overrides) ? overrides.desiredCount : 1,
-    runningCount: ('runningCount' in overrides) ? overrides.runningCount : 1,
-    deploymentRunningCount: ('deploymentRunningCount' in overrides) ? overrides.deploymentRunningCount : 1,
-    taskDef: overrides.taskDef || 'taskDef',
-  };
-}
-
-function checkAlerts(result, expected) {
-  expect(_createResultObject(result)).toEqual(_createExpectedObject(expected));
-}
-
-function _createResultObject(result) {
-  return {
-    serviceDeployingAlerts: result.serviceDeployingAlerts.length,
-    serviceDeployDoneAlerts: result.serviceDeployDoneAlerts.length,
-    serviceDeployTimeoutAlerts: result.serviceDeployTimeoutAlerts.length,
-    serviceScalingAlerts: result.serviceScalingAlerts.length,
-    serviceRecoverAlerts: result.serviceRecoverAlerts.length,
-  }
-}
-
-function _createExpectedObject(expected) {
-  return {
-    serviceDeployingAlerts: ('serviceDeployingAlerts' in expected) ? expected.serviceDeployingAlerts : 0,
-    serviceDeployDoneAlerts: ('serviceDeployDoneAlerts' in expected) ? expected.serviceDeployDoneAlerts : 0,
-    serviceDeployTimeoutAlerts: ('serviceDeployTimeoutAlerts' in expected) ? expected.serviceDeployTimeoutAlerts : 0,
-    serviceScalingAlerts: ('serviceScalingAlerts' in expected) ? expected.serviceScalingAlerts : 0,
-    serviceRecoverAlerts: ('serviceRecoverAlerts' in expected) ? expected.serviceRecoverAlerts : 0,
-  }
-}
 
 describe('Deployment checker', () => {
   let checker;
@@ -50,51 +13,6 @@ describe('Deployment checker', () => {
       b: mockResults('b'),
     };
     checker = new Checker(10, initialApiResults);
-  });
-
-  describe('Calculate deployment status', () => {
-    test('When deployment is stable, state is STABLE', () => {
-      const apiResults = {
-        a: mockResults('a'),
-        b: mockResults('b'),
-      };
-
-      const result = checker.iterate(apiResults);
-      expect(result.serviceDeployStates.a).toEqual(DEPLOYMENT_STATES.STABLE);
-      expect(result.serviceDeployStates.b).toEqual(DEPLOYMENT_STATES.STABLE);
-    });
-
-    test('When deployment is not stable, state is DEPLOYING', () => {
-      const apiResults = {
-        a: mockResults('a', { deploymentId: 'deployment2', deploymentRunningCount: 0 }),
-        b: mockResults('b'),
-      };
-
-      const result = checker.iterate(apiResults);
-      expect(result.serviceDeployStates.a).toEqual(DEPLOYMENT_STATES.DEPLOYING);
-      expect(result.serviceDeployStates.b).toEqual(DEPLOYMENT_STATES.STABLE);
-    });
-
-    test('When deployment is not stable, but deploymentId didn\'t change, state is RECOVER', () => {
-      const result1 = checker.iterate({ a: mockResults('a') });
-      expect(result1.serviceDeployStates.a).toEqual(DEPLOYMENT_STATES.STABLE);
-
-      const result2 = checker.iterate({ a: mockResults('a', { deploymentRunningCount: 0 }) });
-      expect(result2.serviceDeployStates.a).toEqual(DEPLOYMENT_STATES.RECOVER);
-    });
-
-    test('When deployment is not stable, and desiredCount changed, state is SCALING', () => {
-      const result1 = checker.iterate({ a: mockResults('a') });
-      expect(result1.serviceDeployStates.a).toEqual(DEPLOYMENT_STATES.STABLE);
-
-      const result2 = checker.iterate({ a: mockResults('a', { desiredCount: 2 }) });
-      expect(result2.serviceDeployStates.a).toEqual(DEPLOYMENT_STATES.SCALING);
-    });
-
-    test('When both deployment changed and desiredCount changed, state is DEPLOYING', () => {
-      const result = checker.iterate({ a: mockResults('a', { deploymentId: 'a', desiredCount: 2 }) });
-      expect(result.serviceDeployStates.a).toEqual(DEPLOYMENT_STATES.DEPLOYING);
-    });
   });
 
   describe('Calculate alerts', () => {
