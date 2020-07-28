@@ -68,13 +68,14 @@ ${JSON.stringify(apiResponse.failures)}`);
   }
   const describeResults = _.find(apiResponse.services, s => s.serviceName === service);
   const primaryDeployment = _.find(describeResults.deployments, d => d.status === PRIMARY_DEPLOYMENT_STATUS);
+  const totalRunning = _.sumBy(_.map(describeResults.deployments, d => d.runningCount));
 
   return {
     service,
     deploymentId: primaryDeployment.id,
     deploymentCreated: primaryDeployment.updatedAt,
     taskDef: primaryDeployment.taskDefinition,
-    runningCount: primaryDeployment.runningCount,
+    runningCount: totalRunning,
     desiredCount: primaryDeployment.desiredCount,
   };
 }
