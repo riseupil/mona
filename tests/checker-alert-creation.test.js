@@ -88,6 +88,24 @@ describe('Deployment checker', () => {
       checkAlerts(result2, { serviceDeployTimeoutAlerts: 1 });
     });
 
+    test('When scaling is running for a long time, should alert', () => {
+      const apiResults = [
+        {
+          a: mockResults('a', { desiredCount: 2 }),
+          b: mockResults('b'),
+        },
+        {
+          a: mockResults('a', { desiredCount: 2, deploymentCreated: moment().subtract(1, 'h') }),
+          b: mockResults('b'),
+        },
+      ];
+      const result1 = checker.iterate(apiResults[0]);
+      checkAlerts(result1, { serviceScalingAlerts: 1 });
+
+      const result2 = checker.iterate(apiResults[1]);
+      checkAlerts(result2, { serviceDeployTimeoutAlerts: 1 });
+    });
+
     test('When deployment is running again for same ver, should alert', () => {
       const apiResults = [
         {
