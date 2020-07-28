@@ -76,6 +76,7 @@ ${JSON.stringify(apiResponse.failures)}`);
     deploymentCreated: primaryDeployment.updatedAt,
     taskDef: primaryDeployment.taskDefinition,
     runningCount: totalRunning,
+    deploymentRunningCount: primaryDeployment.runningCount,
     desiredCount: primaryDeployment.desiredCount,
   };
 }

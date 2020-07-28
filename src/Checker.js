@@ -6,13 +6,16 @@ const _ = require('lodash');
 const { DEPLOYMENT_STATES } = require('./consts');
 
 class Checker {
-  constructor(secondsUntilAlert) {
+  constructor(secondsUntilAlert, initialServiceStates) {
     this.secondsUntilAlert = secondsUntilAlert;
     this.deploymentTimeoutAlerted = {};
     this.deploymentInProgress = {};
     this.lastDeploymentDone = {};
     this.currentTaskDef = {};
     this.currentDesiredCount = {};
+
+    const serviceNames = _.keys(initialServiceStates);
+    this._updateTaskDefs(serviceNames, initialServiceStates, true);
   }
 
   iterate(serviceStates) {
@@ -46,32 +49,39 @@ class Checker {
   }
 
   _serviceDeploymentState(newState, service) {
-    if (this._isStable(newState)) {
+    if (this._isNewDeployment(service, newState)) {
+      if (this._isDeploymentDone(service, newState)) {
+        return DEPLOYMENT_STATES.STABLE;
+      }
+
+      return DEPLOYMENT_STATES.DEPLOYING;
+    }
+
+    if (this._isStable(service, newState)) {
       return DEPLOYMENT_STATES.STABLE;
     }
+
     if (this._updatedDesiredCount(service, newState)) {
       return DEPLOYMENT_STATES.SCALING;
     }
-    if (this._isSameDeployment(service, newState)) {
-      return DEPLOYMENT_STATES.RECOVER;
-    }
-    return DEPLOYMENT_STATES.DEPLOYING;
+
+    return DEPLOYMENT_STATES.RECOVER;
   }
 
-  _isStable(state) {
-    return state.runningCount === state.desiredCount;
+  _isStable(service, state) {
+    return state.deploymentRunningCount === state.desiredCount;
   }
 
-  _isSameDeployment(service, state) {
-    return this._isCurrentTaskDef(service, state.taskDef) && this._deploymentFinished(service, state.deploymentId);
+  _isNewDeployment(service, state) {
+    return !this._deploymentFinished(service, state.deploymentId);
+  }
+
+  _isDeploymentDone(service, state) {
+    return state.desiredCount === state.deploymentRunningCount;
   }
 
   _updatedDesiredCount(service, state) {
-    return this.currentDesiredCount[service] && this.currentDesiredCount[service] !== state.desiredCount;
-  }
-
-  _isCurrentTaskDef(service, taskDef) {
-    return this.currentTaskDef[service] === taskDef;
+    return this.currentDesiredCount[service] !== state.desiredCount;
   }
 
   _deploymentFinished(service, deploymentId) {
@@ -82,12 +92,12 @@ class Checker {
     return this.deploymentInProgress[service] === deploymentId;
   }
 
-  _updateTaskDefs(serviceNames, serviceStates) {
+  _updateTaskDefs(serviceNames, serviceStates, firstRun=false) {
     _.forEach(serviceNames, service => {
       this.currentTaskDef[service] = serviceStates[service].taskDef;
       this.currentDesiredCount[service] = serviceStates[service].desiredCount;
 
-      if (this._isStable(serviceStates[service])) {
+      if (firstRun || this._isStable(service, serviceStates[service])) {
         this.lastDeploymentDone[service] = serviceStates[service].deploymentId;
       }
     });

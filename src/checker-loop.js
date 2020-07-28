@@ -28,7 +28,8 @@ async function runCheck(params, messageSender, messageFormatter) {
     }, refreshServicesInterval * 1000);
   }
 
-  const checker = new Checker(secondsUntilAlert);
+  const initialServiceStates = await ecsApi.runCheckInBatches(ecsCluster, serviceNameBatches);
+  const checker = new Checker(secondsUntilAlert, initialServiceStates);
   const intervalLogger = utils.runInInterval(logInterval, utils.printLogContent);
 
   setInterval(async () => {
