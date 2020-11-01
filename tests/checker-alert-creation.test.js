@@ -257,5 +257,30 @@ describe('Deployment checker', () => {
       const result3 = checker.iterate(apiResults[2]);
       checkAlerts(result3, { serviceDeployDoneAlerts: 1 });
     });
+
+    test('Dont send timeout alert after a crash', () => {
+      const apiResults = [
+        {
+          a: mockResults('a', { deploymentCreated: moment().subtract(1, 'h') }),
+          b: mockResults('b'),
+        },
+        {
+          a: mockResults('a', { deploymentRunningCount: 0, deploymentCreated: moment().subtract(1, 'h') }),
+          b: mockResults('b'),
+        },
+        {
+          a: mockResults('a', { deploymentRunningCount: 0, deploymentCreated: moment().subtract(1, 'h') }),
+          b: mockResults('b'),
+        },
+      ];
+      const result1 = checker.iterate(apiResults[0]);
+      checkAlerts(result1, {});
+
+      const result2 = checker.iterate(apiResults[1]);
+      checkAlerts(result2, { serviceRecoverAlerts: 1 });
+
+      const result3 = checker.iterate(apiResults[2]);
+      checkAlerts(result3, {});
+    });
   });
 });

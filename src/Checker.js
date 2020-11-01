@@ -127,6 +127,7 @@ class Checker {
     if (deployState === DEPLOYMENT_STATES.RECOVER && !this._deploymentInProgress(service, serviceState.deploymentId)) {
       this.deploymentInProgress[service] = serviceState.deploymentId;
       this.lastDeploymentDone[service] = null;
+      this.deploymentTimeoutAlerted[service] = serviceState.deploymentId;
       return serviceState;
     }
     return null;
