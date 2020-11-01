@@ -18,12 +18,16 @@ function initECS(AWSRegion) {
 
 async function getExistingServicesInBatches(ecsCluster, nextToken = null) {
   const result = await _makeServicesRequest(ecsCluster, nextToken);
-  const receivedArns = _.map(result.serviceArns, arn => arn.split('/')[1]);
+  const receivedArns = _.map(result.serviceArns, _extractName);
 
   if (result.nextToken) {
     return _.concat([receivedArns], await getExistingServicesInBatches(ecsCluster, result.nextToken));
   }
   return [receivedArns];
+}
+
+function _extractName(arn) {
+  return _.last(arn.split('/'));
 }
 
 async function _makeServicesRequest(ecsCluster, nextToken) {
