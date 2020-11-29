@@ -6,13 +6,12 @@ const { getLogger, loggerInit } = require('./logger');
 const Checker = require('./Checker');
 const ecsApi = require('./ecs-api');
 const Messager = require('./Messager');
-const utils = require('./utils');
 const defaults = require('./defaults');
 
 const { DEPLOYMENT_STATES } = require('./consts');
 
 async function runCheck(params, messageSender, messageFormatter) {
-  const { providedLogger, serviceNamesOverride, checkIntervalSeconds, secondsUntilAlert, logInterval, refreshServicesInterval, ecsCluster, ecsRegion } = _.merge(defaults, params);
+  const { providedLogger, serviceNamesOverride, checkIntervalSeconds, secondsUntilAlert, refreshServicesInterval, ecsCluster, ecsRegion } = _.merge(defaults, params);
   loggerInit(providedLogger);
   ecsApi.initECS(ecsRegion);
 
@@ -30,13 +29,10 @@ async function runCheck(params, messageSender, messageFormatter) {
 
   const initialServiceStates = await ecsApi.runCheckInBatches(ecsCluster, serviceNameBatches);
   const checker = new Checker(secondsUntilAlert, initialServiceStates);
-  const intervalLogger = utils.runInInterval(logInterval, utils.printLogContent);
 
   setInterval(async () => {
     const serviceStates = await ecsApi.runCheckInBatches(ecsCluster, serviceNameBatches);
     const results = checker.iterate(serviceStates);
-
-    intervalLogger(results.serviceDeployStates);
     await messager.sendMessages(results);
   }, checkIntervalSeconds * 1000);
 }

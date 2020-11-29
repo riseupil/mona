@@ -3,6 +3,7 @@
 const moment = require('moment');
 const _ = require('lodash');
 
+const { getLogger } = require('./logger');
 const { DEPLOYMENT_STATES } = require('./consts');
 
 class Checker {
@@ -30,14 +31,23 @@ class Checker {
 
     this._updateTaskDefs(serviceNames, serviceStates);
 
-    return {
-      serviceDeployStates,
+    const alerts = {
       serviceDeployingAlerts,
       serviceScalingAlerts,
       serviceRecoverAlerts,
       serviceDeployDoneAlerts,
       serviceDeployTimeoutAlerts,
     };
+
+    if (this._hasAlerts(alerts)) {
+      getLogger().debug('An alert was created', { ...serviceDeployStates });
+    }
+
+    return { ...alerts, serviceDeployStates };
+  }
+
+  _hasAlerts(iterationResults) {
+    return _.some(_.mapValues(iterationResults, list => list.length > 0));
   }
 
   _getDeploymentStates(serviceNames, newStates) {

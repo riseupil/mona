@@ -3,6 +3,9 @@
 const { DEPLOYMENT_STATES } = require('../src/consts');
 const { mockResults } = require('./test-utils');
 const Checker = require('../src/Checker');
+const { loggerInit } = require('../src/logger');
+
+loggerInit(console);
 
 describe('Deployment checker', () => {
   let checker;

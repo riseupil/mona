@@ -3,6 +3,9 @@
 const moment = require('moment');
 const { mockResults, checkAlerts } = require('./test-utils');
 const Checker = require('../src/Checker');
+const { loggerInit } = require('../src/logger');
+
+loggerInit(console);
 
 describe('Deployment checker', () => {
   let checker;
