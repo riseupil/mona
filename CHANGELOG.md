@@ -6,8 +6,11 @@ The format is based on [Keep a Changelog](https://github.com/olivierlacan/keep-a
 
 ## [Unreleased]
 
+## [1.0.5]
+
 ### Changed
 - Fixes in README
+- Log on every alert instead of interval
 
 ## [1.0.1]
 
@@ -30,3 +33,4 @@ The format is based on [Keep a Changelog](https://github.com/olivierlacan/keep-a
 [unreleased]: https://github.com/riseupil/mona/compare/1.0.0...HEAD
 [1.0.0]: https://github.com/riseupil/mona/releases/tag/1.0.0
 [1.0.1]: https://github.com/riseupil/mona/releases/tag/1.0.1
+[1.0.5]: https://github.com/riseupil/mona/releases/tag/1.0.5
