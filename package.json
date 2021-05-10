@@ -24,7 +24,7 @@
   "homepage": "https://github.com/riseupil/mona#readme",
   "dependencies": {
     "aws-sdk": "2.574.0",
-    "lodash": "4.17.19",
+    "lodash": "4.17.21",
     "moment": "2.23.0",
     "request": "2.83.0",
     "request-promise-native": "1.0.5",
