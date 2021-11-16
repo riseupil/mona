@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/riseupil/mona#readme",
   "dependencies": {
-    "aws-sdk": "2.574.0",
+    "aws-sdk": "2.814.0",
     "lodash": "4.17.19",
     "moment": "2.23.0",
     "request": "2.83.0",
