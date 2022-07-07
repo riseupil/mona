@@ -25,7 +25,7 @@
   "dependencies": {
     "aws-sdk": "2.574.0",
     "lodash": "4.17.19",
-    "moment": "2.23.0",
+    "moment": "2.29.4",
     "request": "2.83.0",
     "request-promise-native": "1.0.5",
     "cryptiles": "4.1.2"
