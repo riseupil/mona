@@ -25,17 +25,13 @@
   "dependencies": {
     "aws-sdk": "2.574.0",
     "lodash": "4.17.19",
-    "moment": "2.23.0",
-    "request": "2.83.0",
-    "request-promise-native": "1.0.5",
-    "cryptiles": "4.1.2"
+    "moment": "2.23.0"
   },
   "devDependencies": {
     "@types/node": "13.7.1",
-    "eslint": "4.19.1",
-    "eslint-config-airbnb-base": "12.1.0",
-    "eslint-plugin-import": "2.11.0",
-    "jest": "24.5.0",
+    "eslint": "8.21.0",
+    "eslint-config-airbnb-base": "15.0.0",
+    "jest": "26.4.2",
     "jest-junit": "3.6.0"
   }
 }
